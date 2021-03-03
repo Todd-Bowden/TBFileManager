@@ -1,3 +1,64 @@
-struct TBFileManager {
-    var text = "Hello, World!"
+
+import Foundation
+
+class TBFileManager {
+    
+    enum Error: Swift.Error {
+        case invalidURL
+    }
+        
+    let baseURL: URL?
+    let doNotBackUp: Bool
+    
+    private let encoder = JSONEncoder()
+    private let decoder = JSONDecoder()
+    
+    init(baseURL: URL, doNotBackUp: Bool = false) {
+        self.baseURL = baseURL
+        self.doNotBackUp = doNotBackUp
+    }
+    
+    init(appGroup: String, directory: String, doNotBackUp: Bool = false) {
+        let appGroupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
+        self.baseURL = appGroupURL?.appendingPathComponent(directory)
+        self.doNotBackUp = doNotBackUp
+    }
+    
+    init(_ baseDirectory: FileManager.SearchPathDirectory, directory: String, doNotBackUp: Bool = false) {
+        let basePath = FileManager.default.urls(for: baseDirectory, in: .userDomainMask).first
+        self.baseURL = basePath?.appendingPathComponent(directory)
+        self.doNotBackUp = doNotBackUp
+    }
+    
+    private func getUrl(file: String) throws -> URL {
+        if let url = self.baseURL?.appendingPathComponent(file)  {
+            return url
+        } else {
+            throw Error.invalidURL
+        }
+    }
+
+    func write(file: String, data: Data) throws {
+        let url = try getUrl(file: file)
+        try data.write(to: url)
+    }
+
+    func read(file: String) throws -> Data {
+        let url = try getUrl(file: file)
+        return try Data(contentsOf: url)
+    }
+    
+    func write<T:Codable>(file: String, object: T) throws {
+        let data = try encoder.encode(object)
+        try write(file: file, data: data)
+    }
+    
+    func read<T:Codable>(file: String) throws -> T {
+        let data = try read(file: file)
+        return try decoder.decode(T.self, from: data)
+    }
+    
+    
+    
+    
 }
