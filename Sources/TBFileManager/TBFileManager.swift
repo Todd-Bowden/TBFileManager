@@ -50,6 +50,16 @@ class TBFileManager {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
     }
     
+    func contents(directory: String) throws -> [String] {
+        let url = try fullUrl(directory)
+        do {
+            return try FileManager.default.contentsOfDirectory(atPath: url.path)
+        } catch {
+            return [String]()
+        }
+    }
+    
+    
     // MARK: Write
 
     func write(file: String, data: Data) throws {
