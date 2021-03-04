@@ -112,4 +112,12 @@ class TBFileManager {
         try FileManager.default.removeItem(at: url)
     }
     
+    // MARK: Attributes
+    
+    func getAttributes(file: String) throws -> [FileAttributeKey:Any] {
+        let url = try fullUrl(file)
+        return try FileManager.default.attributesOfItem(atPath: url.path)
+    }
+    
+
 }
