@@ -5,6 +5,7 @@ class TBFileManager {
     
     enum Error: Swift.Error {
         case invalidURL
+        case stringEncodingError
     }
         
     let baseURL: URL?
@@ -68,6 +69,13 @@ class TBFileManager {
         try data.write(to: url)
     }
     
+    func write(file: String, string: String) throws {
+        guard let data = string.data(using: .utf8) else {
+            throw Error.stringEncodingError
+        }
+        try write(file: file, data: data)
+    }
+    
     func write<T:Codable>(file: String, object: T) throws {
         let data = try encoder.encode(object)
         try write(file: file, data: data)
@@ -81,7 +89,16 @@ class TBFileManager {
         return try Data(contentsOf: url)
     }
     
-
+    func read(file: String, encoding: String.Encoding = .utf8) throws -> String {
+        let url = try fullUrl(file)
+        let data = try Data(contentsOf: url)
+        if let string = String(data: data, encoding: encoding) {
+            return string
+        } else {
+            throw Error.stringEncodingError
+        }
+    }
+    
     func read<T:Codable>(file: String) throws -> T {
         let data = try read(file: file)
         return try decoder.decode(T.self, from: data)
