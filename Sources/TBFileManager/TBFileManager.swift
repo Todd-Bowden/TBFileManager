@@ -30,21 +30,32 @@ class TBFileManager {
         self.doNotBackUp = doNotBackUp
     }
     
-    private func getUrl(file: String) throws -> URL {
+    private func getUrl(_ file: String) throws -> URL {
         if let url = self.baseURL?.appendingPathComponent(file)  {
             return url
         } else {
             throw Error.invalidURL
         }
     }
+    
+    func create(directory: String)  throws {
+        let url = try getUrl(directory)
+        try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
+    }
+    
+    private func createIntermediate(directory: String)  throws {
+        let url = try getUrl(directory)
+        try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
+    }
 
     func write(file: String, data: Data) throws {
-        let url = try getUrl(file: file)
+        let url = try getUrl(file)
+        try createIntermediate(directory: file)
         try data.write(to: url)
     }
 
     func read(file: String) throws -> Data {
-        let url = try getUrl(file: file)
+        let url = try getUrl(file)
         return try Data(contentsOf: url)
     }
     
