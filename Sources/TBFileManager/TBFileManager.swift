@@ -105,6 +105,11 @@ class TBFileManager {
     }
     
     
+    // MARK: Delete
     
+    func delete(file: String) throws {
+        let url = try fullUrl(file)
+        try FileManager.default.removeItem(at: url)
+    }
     
 }
