@@ -38,6 +38,8 @@ class TBFileManager {
         }
     }
     
+    // MARK: Directories
+    
     func create(directory: String)  throws {
         let url = try fullUrl(directory)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
@@ -47,16 +49,13 @@ class TBFileManager {
         let url = try fullUrl(directory)
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
     }
+    
+    // MARK: Write
 
     func write(file: String, data: Data) throws {
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
         try data.write(to: url)
-    }
-
-    func read(file: String) throws -> Data {
-        let url = try fullUrl(file)
-        return try Data(contentsOf: url)
     }
     
     func write<T:Codable>(file: String, object: T) throws {
@@ -64,6 +63,15 @@ class TBFileManager {
         try write(file: file, data: data)
     }
     
+    
+    // MARK: Read
+    
+    func read(file: String) throws -> Data {
+        let url = try fullUrl(file)
+        return try Data(contentsOf: url)
+    }
+    
+
     func read<T:Codable>(file: String) throws -> T {
         let data = try read(file: file)
         return try decoder.decode(T.self, from: data)
