@@ -6,6 +6,7 @@ class TBFileManager {
     enum Error: Swift.Error {
         case invalidURL
         case stringEncodingError
+        case invalidExtendedAttribute
     }
         
     let baseURL: URL?
@@ -129,5 +130,63 @@ class TBFileManager {
         return try FileManager.default.attributesOfItem(atPath: url.path)
     }
     
+    func getExtendedAttributeList(file: String) throws -> [String] {
+        let url = try fullUrl(file)
+        let list = try url.withUnsafeFileSystemRepresentation({ (path) -> [String] in
+            let size = listxattr(path, nil, 0, 0)
+            guard size > 0 else { return [String]() }
+            var buffer = Array<Int8>(repeating: 0, count: size)
+            let r = listxattr(path, &buffer, size, 0)
+            guard size == r else { throw Error.invalidExtendedAttribute }
+            let bufferUInt8: Array<UInt8> = buffer.map { (int8) -> UInt8 in
+                return UInt8(int8)
+            }
+            let list = Data(bufferUInt8).split(separator: 0).map { (attribute) -> String in
+                return String(data: attribute, encoding: .utf8) ?? ""
+            }
+            return list
+        })
+        return list
+    }
+    
+    func getExtendedAttributes(file: String) throws -> [String:Data] {
+        let list = try getExtendedAttributeList(file: file)
+        var attributes = [String:Data]()
+        for att in list {
+            let value = try getExtendedAttribute(att, file: file)
+            attributes[att] = value
+        }
+        return attributes
+    }
+    
+    func getExtendedAttribute(_ name: String, file: String) throws -> Data {
+        let url = try fullUrl(file)
+        let data = try url.withUnsafeFileSystemRepresentation({ (path) -> Data in
+            let size = getxattr(path, name, nil, 0, 0, 0)
+            guard size > 0 else { throw Error.invalidExtendedAttribute }
+            let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: size)
+            let r = getxattr(path, name, buffer, size, 0, 0)
+            guard size == r else { throw Error.invalidExtendedAttribute }
+            let data = Data(bytes: buffer, count: size)
+            buffer.deallocate()
+            return data
+        })
+        return data
+    }
+    
+    func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
+        let url = try fullUrl(file)
+        var value = value
+        let _ = url.withUnsafeFileSystemRepresentation { path in
+            setxattr(path, name, &value, value.count, 0, 0)
+         }
+    }
+    
+    func removeExtendedAttribute(_ name: String, file: String) throws {
+        let url = try fullUrl(file)
+        let _ = url.withUnsafeFileSystemRepresentation { path in
+            let _ = removexattr(path, name, 0)
+        }
+    }
 
 }
