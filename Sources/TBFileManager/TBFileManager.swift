@@ -67,6 +67,9 @@ class TBFileManager {
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
         try data.write(to: url)
+        if doNotBackUp {
+            try excludeFromBackup(file: file)
+        }
     }
     
     func write(file: String, string: String) throws {
@@ -79,6 +82,13 @@ class TBFileManager {
     func write<T:Codable>(file: String, object: T) throws {
         let data = try encoder.encode(object)
         try write(file: file, data: data)
+    }
+    
+    func excludeFromBackup(file: String) throws {
+        var url = try fullUrl(file)
+        var rv = URLResourceValues()
+        rv.isExcludedFromBackup = true
+        try url.setResourceValues(rv)
     }
     
     
