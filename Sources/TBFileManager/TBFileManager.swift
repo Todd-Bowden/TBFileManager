@@ -3,36 +3,36 @@ import Foundation
 
 public class TBFileManager {
     
-    enum Error: Swift.Error {
+    public  enum Error: Swift.Error {
         case invalidURL
         case stringEncodingError
         case invalidExtendedAttribute
     }
         
-    let baseURL: URL?
-    let doNotBackUp: Bool
+    public let baseURL: URL?
+    public let doNotBackUp: Bool
     
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
     
-    init(baseURL: URL, doNotBackUp: Bool = false) {
+    public init(baseURL: URL, doNotBackUp: Bool = false) {
         self.baseURL = baseURL
         self.doNotBackUp = doNotBackUp
     }
     
-    init(appGroup: String, directory: String, doNotBackUp: Bool = false) {
+    public init(appGroup: String, directory: String, doNotBackUp: Bool = false) {
         let appGroupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
         self.baseURL = appGroupURL?.appendingPathComponent(directory)
         self.doNotBackUp = doNotBackUp
     }
     
-    init(_ baseDirectory: FileManager.SearchPathDirectory, directory: String, doNotBackUp: Bool = false) {
+    public init(_ baseDirectory: FileManager.SearchPathDirectory, directory: String, doNotBackUp: Bool = false) {
         let basePath = FileManager.default.urls(for: baseDirectory, in: .userDomainMask).first
         self.baseURL = basePath?.appendingPathComponent(directory)
         self.doNotBackUp = doNotBackUp
     }
     
-    func fullUrl(_ file: String) throws -> URL {
+    public func fullUrl(_ file: String) throws -> URL {
         if let url = self.baseURL?.appendingPathComponent(file)  {
             return url
         } else {
@@ -42,7 +42,7 @@ public class TBFileManager {
     
     // MARK: Directories
     
-    func create(directory: String)  throws {
+    public func create(directory: String)  throws {
         let url = try fullUrl(directory)
         try FileManager.default.createDirectory(at: url, withIntermediateDirectories: true, attributes: nil)
     }
@@ -52,7 +52,7 @@ public class TBFileManager {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
     }
     
-    func contents(directory: String) throws -> [String] {
+    public func contents(directory: String) throws -> [String] {
         let url = try fullUrl(directory)
         do {
             return try FileManager.default.contentsOfDirectory(atPath: url.path)
@@ -64,7 +64,7 @@ public class TBFileManager {
     
     // MARK: Write
 
-    func write(file: String, data: Data) throws {
+    public func write(file: String, data: Data) throws {
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
         try data.write(to: url)
@@ -73,19 +73,19 @@ public class TBFileManager {
         }
     }
     
-    func write(file: String, string: String) throws {
+    public func write(file: String, string: String) throws {
         guard let data = string.data(using: .utf8) else {
             throw Error.stringEncodingError
         }
         try write(file: file, data: data)
     }
     
-    func write<T:Codable>(file: String, object: T) throws {
+    public func write<T:Codable>(file: String, object: T) throws {
         let data = try encoder.encode(object)
         try write(file: file, data: data)
     }
     
-    func excludeFromBackup(file: String) throws {
+    public func excludeFromBackup(file: String) throws {
         var url = try fullUrl(file)
         var rv = URLResourceValues()
         rv.isExcludedFromBackup = true
@@ -95,12 +95,12 @@ public class TBFileManager {
     
     // MARK: Read
     
-    func read(file: String) throws -> Data {
+    public func read(file: String) throws -> Data {
         let url = try fullUrl(file)
         return try Data(contentsOf: url)
     }
     
-    func read(file: String, encoding: String.Encoding = .utf8) throws -> String {
+    public func read(file: String, encoding: String.Encoding = .utf8) throws -> String {
         let url = try fullUrl(file)
         let data = try Data(contentsOf: url)
         if let string = String(data: data, encoding: encoding) {
@@ -110,7 +110,7 @@ public class TBFileManager {
         }
     }
     
-    func read<T:Codable>(file: String) throws -> T {
+    public func read<T:Codable>(file: String) throws -> T {
         let data = try read(file: file)
         return try decoder.decode(T.self, from: data)
     }
@@ -118,19 +118,19 @@ public class TBFileManager {
     
     // MARK: Delete
     
-    func delete(file: String) throws {
+    public func delete(file: String) throws {
         let url = try fullUrl(file)
         try FileManager.default.removeItem(at: url)
     }
     
     // MARK: Attributes
     
-    func getAttributes(file: String) throws -> [FileAttributeKey:Any] {
+    public func getAttributes(file: String) throws -> [FileAttributeKey:Any] {
         let url = try fullUrl(file)
         return try FileManager.default.attributesOfItem(atPath: url.path)
     }
     
-    func getExtendedAttributeList(file: String) throws -> [String] {
+    public func getExtendedAttributeList(file: String) throws -> [String] {
         let url = try fullUrl(file)
         let list = try url.withUnsafeFileSystemRepresentation({ (path) -> [String] in
             let size = listxattr(path, nil, 0, 0)
@@ -149,7 +149,7 @@ public class TBFileManager {
         return list
     }
     
-    func getExtendedAttributes(file: String) throws -> [String:Data] {
+    public func getExtendedAttributes(file: String) throws -> [String:Data] {
         let list = try getExtendedAttributeList(file: file)
         var attributes = [String:Data]()
         for att in list {
@@ -159,7 +159,7 @@ public class TBFileManager {
         return attributes
     }
     
-    func getExtendedAttribute(_ name: String, file: String) throws -> Data {
+    public func getExtendedAttribute(_ name: String, file: String) throws -> Data {
         let url = try fullUrl(file)
         let data = try url.withUnsafeFileSystemRepresentation({ (path) -> Data in
             let size = getxattr(path, name, nil, 0, 0, 0)
@@ -174,7 +174,7 @@ public class TBFileManager {
         return data
     }
     
-    func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
+    public func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
         let url = try fullUrl(file)
         var value = value
         let _ = url.withUnsafeFileSystemRepresentation { path in
@@ -182,7 +182,7 @@ public class TBFileManager {
          }
     }
     
-    func removeExtendedAttribute(_ name: String, file: String) throws {
+    public func removeExtendedAttribute(_ name: String, file: String) throws {
         let url = try fullUrl(file)
         let _ = url.withUnsafeFileSystemRepresentation { path in
             let _ = removexattr(path, name, 0)
