@@ -1,7 +1,7 @@
 
 import Foundation
 
-class TBFileManager {
+public class TBFileManager {
     
     enum Error: Swift.Error {
         case invalidURL
