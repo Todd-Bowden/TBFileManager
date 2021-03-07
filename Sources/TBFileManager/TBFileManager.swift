@@ -1,19 +1,28 @@
 
 import Foundation
 
+public protocol TBFileManagerEncryptionProvider {
+    func encrypt(data: Data, key: Data?) throws -> (key: Data, encryptedData: Data)
+    func decrypt(data: Data, key: Data) throws -> Data
+}
+
 public class TBFileManager {
     
     public  enum Error: Swift.Error {
         case invalidURL
         case stringEncodingError
         case invalidExtendedAttribute
+        case encryptionProviderNotSet
     }
         
     public let baseURL: URL?
-    public let doNotBackUp: Bool
+    public var doNotBackUp: Bool
     
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    
+    public var encryptionProvider: TBFileManagerEncryptionProvider?
+    private let encryptionKeyExtendedAttributeName = "TBFileManager.EncryptionKey"
     
     public init(baseURL: URL, doNotBackUp: Bool = false) {
         self.baseURL = baseURL
@@ -64,25 +73,32 @@ public class TBFileManager {
     
     // MARK: Write
 
-    public func write(file: String, data: Data) throws {
+    public func write(file: String, data: Data, encrypt: Bool = false, key: Data? = nil) throws {
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
-        try data.write(to: url)
+        if encrypt {
+            guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
+            let kd = try encryptionProvider.encrypt(data: data, key: key)
+            try kd.encryptedData.write(to: url)
+            try setExtendedAttribute(encryptionKeyExtendedAttributeName, value: kd.key, file: file)
+        } else {
+            try data.write(to: url)
+        }
         if doNotBackUp {
             try excludeFromBackup(file: file)
         }
     }
     
-    public func write(file: String, string: String) throws {
+    public func write(file: String, string: String, encrypt: Bool = false, key: Data? = nil) throws {
         guard let data = string.data(using: .utf8) else {
             throw Error.stringEncodingError
         }
-        try write(file: file, data: data)
+        try write(file: file, data: data, encrypt: encrypt, key: key)
     }
     
-    public func write<T:Codable>(file: String, object: T) throws {
+    public func write<T:Codable>(file: String, object: T, encrypt: Bool = false, key: Data? = nil) throws {
         let data = try encoder.encode(object)
-        try write(file: file, data: data)
+        try write(file: file, data: data, encrypt: encrypt, key: key)
     }
     
     public func excludeFromBackup(file: String) throws {
@@ -97,7 +113,13 @@ public class TBFileManager {
     
     public func read(file: String) throws -> Data {
         let url = try fullUrl(file)
-        return try Data(contentsOf: url)
+        if let key = try? getExtendedAttribute(encryptionKeyExtendedAttributeName, file: file) {
+            guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
+            let encryptedData = try Data(contentsOf: url)
+            return try encryptionProvider.decrypt(data: encryptedData, key: key)
+        } else {
+            return try Data(contentsOf: url)
+        }
     }
     
     public func read(file: String, encoding: String.Encoding = .utf8) throws -> String {
