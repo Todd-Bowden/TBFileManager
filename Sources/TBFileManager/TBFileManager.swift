@@ -20,13 +20,13 @@ public class TBFileManager {
         self.doNotBackUp = doNotBackUp
     }
     
-    public init(appGroup: String, directory: String, doNotBackUp: Bool = false) {
+    public init(appGroup: String, directory: String = "", doNotBackUp: Bool = false) {
         let appGroupURL = FileManager.default.containerURL(forSecurityApplicationGroupIdentifier: appGroup)
         self.baseURL = appGroupURL?.appendingPathComponent(directory)
         self.doNotBackUp = doNotBackUp
     }
     
-    public init(_ baseDirectory: FileManager.SearchPathDirectory, directory: String, doNotBackUp: Bool = false) {
+    public init(_ baseDirectory: FileManager.SearchPathDirectory, directory: String = "", doNotBackUp: Bool = false) {
         let basePath = FileManager.default.urls(for: baseDirectory, in: .userDomainMask).first
         self.baseURL = basePath?.appendingPathComponent(directory)
         self.doNotBackUp = doNotBackUp
