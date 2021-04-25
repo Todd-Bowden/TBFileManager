@@ -73,7 +73,8 @@ public class TBFileManager {
     
     // MARK: Write
 
-    public func write(file: String, data: Data, encrypt: Bool = false, key: Data? = nil) throws {
+    public func write(file: String, data: Data, encrypt: Bool? = nil, key: Data? = nil) throws {
+        let encrypt = encrypt ?? (encryptionProvider != nil)
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
         if encrypt {
