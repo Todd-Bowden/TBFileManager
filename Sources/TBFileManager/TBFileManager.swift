@@ -13,10 +13,13 @@ public class TBFileManager {
         case stringEncodingError
         case invalidExtendedAttribute
         case encryptionProviderNotSet
+        case writeNotEnabled
     }
         
     public let baseURL: URL?
     public var doNotBackUp: Bool
+    
+    public var writeEnabled = true
     
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -74,6 +77,7 @@ public class TBFileManager {
     // MARK: Write
 
     public func write(file: String, data: Data, encrypt: Bool? = nil, key: Data? = nil) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
         let encrypt = encrypt ?? (encryptionProvider != nil)
         let url = try fullUrl(file)
         try createIntermediate(directory: file)
@@ -91,6 +95,7 @@ public class TBFileManager {
     }
     
     public func write(file: String, string: String, encrypt: Bool = false, key: Data? = nil) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
         guard let data = string.data(using: .utf8) else {
             throw Error.stringEncodingError
         }
@@ -98,6 +103,7 @@ public class TBFileManager {
     }
     
     public func write<T:Codable>(file: String, object: T, encrypt: Bool = false, key: Data? = nil) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
         let data = try encoder.encode(object)
         try write(file: file, data: data, encrypt: encrypt, key: key)
     }
@@ -198,6 +204,7 @@ public class TBFileManager {
     }
     
     public func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
         let url = try fullUrl(file)
         var value = value
         let _ = url.withUnsafeFileSystemRepresentation { path in
