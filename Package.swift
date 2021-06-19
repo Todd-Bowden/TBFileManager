@@ -28,5 +28,6 @@ let package = Package(
         .testTarget(
             name: "TBFileManagerTests",
             dependencies: ["TBFileManager"]),
-    ]
+    ],
+    swiftLanguageVersions: [.v5])
 )
