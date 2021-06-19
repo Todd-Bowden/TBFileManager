@@ -64,7 +64,7 @@ public class TBFileManager {
         try FileManager.default.createDirectory(at: url.deletingLastPathComponent(), withIntermediateDirectories: true, attributes: nil)
     }
     
-    public func contents(directory: String) throws -> [String] {
+    public func contents(directory: String = "") throws -> [String] {
         let url = try fullUrl(directory)
         do {
             return try FileManager.default.contentsOfDirectory(atPath: url.path)
