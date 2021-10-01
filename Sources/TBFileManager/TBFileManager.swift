@@ -249,7 +249,7 @@ public class TBFileManager {
     public func setLastAccessDate(_ date: Date? = nil, file: String) throws {
         let date = date ?? Date()
         let string = String(dateformatter.string(from: date))
-        guard let data = string.data(using: .utf8) else { throw Error.writeExtendedAttributeError }
+        guard let data = string.data(using: .utf8) else { throw Error.stringEncodingError}
         try setExtendedAttribute(.lastAccessDate, value: data, file: file)
     }
     
