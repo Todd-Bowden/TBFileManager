@@ -16,6 +16,11 @@ public class TBFileManager {
         case writeNotEnabled
         case writeExtendedAttributeError
     }
+    
+    public enum ExtendedAttribute: String {
+       case encryptionKey = "EncryptionKey"
+       case lastAccessDate = "LastAccessDate"
+   }
         
     public let baseURL: URL?
     public var doNotBackUp: Bool
@@ -26,7 +31,6 @@ public class TBFileManager {
     private let decoder = JSONDecoder()
     
     public var encryptionProvider: TBFileManagerEncryptionProvider?
-    private let encryptionKeyExtendedAttributeName = "TBFileManager.EncryptionKey"
     
     public init(baseURL: URL, doNotBackUp: Bool = false) {
         self.baseURL = baseURL
@@ -86,7 +90,7 @@ public class TBFileManager {
             guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
             let kd = try encryptionProvider.encrypt(data: data, key: key)
             try kd.encryptedData.write(to: url)
-            try setExtendedAttribute(encryptionKeyExtendedAttributeName, value: kd.key, file: file)
+            try setExtendedAttribute(.encryptionKey, value: kd.key, file: file)
         } else {
             try data.write(to: url)
         }
@@ -121,7 +125,7 @@ public class TBFileManager {
     
     public func read(file: String) throws -> Data {
         let url = try fullUrl(file)
-        if let key = try? getExtendedAttribute(encryptionKeyExtendedAttributeName, file: file) {
+        if let key = try? extendedAttribute(.encryptionKey, file: file) {
             guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
             let encryptedData = try Data(contentsOf: url)
             return try encryptionProvider.decrypt(data: encryptedData, key: key)
@@ -189,6 +193,11 @@ public class TBFileManager {
         return attributes
     }
     
+    
+    public func extendedAttribute(_ name: ExtendedAttribute, file: String) throws -> Data {
+          return try extendedAttribute(name.rawValue, file: file)
+      }
+    
     public func extendedAttribute(_ name: String, file: String) throws -> Data {
         let url = try fullUrl(file)
         let data = try url.withUnsafeFileSystemRepresentation({ (path) -> Data in
@@ -205,6 +214,10 @@ public class TBFileManager {
     }
     
     
+    public func setExtendedAttribute(_ name: ExtendedAttribute, value: Data, file: String) throws {
+        try setExtendedAttribute(name.rawValue, value: value, file: file)
+    }
+    
     public func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
         guard writeEnabled else { throw Error.writeNotEnabled }
         let url = try fullUrl(file)
@@ -218,7 +231,10 @@ public class TBFileManager {
     }
 
     
-    
+    public func removeExtendedAttribute(_ name: ExtendedAttribute, file: String) throws {
+          try removeExtendedAttribute(name.rawValue, file: file)
+    }
+
     public func removeExtendedAttribute(_ name: String, file: String) throws {
         let url = try fullUrl(file)
         let _ = url.withUnsafeFileSystemRepresentation { path in
