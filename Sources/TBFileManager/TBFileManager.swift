@@ -8,7 +8,7 @@ public protocol TBFileManagerEncryptionProvider {
 
 public class TBFileManager {
     
-    public  enum Error: Swift.Error {
+    public enum Error: Swift.Error {
         case invalidURL
         case stringEncodingError
         case invalidExtendedAttribute
@@ -29,6 +29,7 @@ public class TBFileManager {
     
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
+    private let dateformatter = ISO8601DateFormatter()
     
     public var encryptionProvider: TBFileManagerEncryptionProvider?
     
@@ -241,5 +242,23 @@ public class TBFileManager {
             let _ = removexattr(path, name, 0)
         }
     }
+    
+    
+    // MARK: Convenience Extended Attributes
+    
+    public func setLastAccessDate(_ date: Date? = nil, file: String) throws {
+        let date = date ?? Date()
+        let string = String(dateformatter.string(from: date))
+        guard let data = string.data(using: .utf8) else { throw Error.writeExtendedAttributeError }
+        try setExtendedAttribute(.lastAccessDate, value: data, file: file)
+    }
+    
+    public func lastAccessDate(file: String) -> Date? {
+        guard let data = try? extendedAttribute(.lastAccessDate, file: file) else { return nil }
+        guard let string = String(data: data, encoding: .utf8) else { return nil }
+        return dateformatter.date(from: string)
+    }
+    
+    
 
 }
