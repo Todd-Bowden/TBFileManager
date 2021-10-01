@@ -154,12 +154,12 @@ public class TBFileManager {
     
     // MARK: Attributes
     
-    public func getAttributes(file: String) throws -> [FileAttributeKey:Any] {
+    public func attributes(file: String) throws -> [FileAttributeKey:Any] {
         let url = try fullUrl(file)
         return try FileManager.default.attributesOfItem(atPath: url.path)
     }
     
-    public func getExtendedAttributeList(file: String) throws -> [String] {
+    public func extendedAttributeList(file: String) throws -> [String] {
         let url = try fullUrl(file)
         let list = try url.withUnsafeFileSystemRepresentation({ (path) -> [String] in
             let size = listxattr(path, nil, 0, 0)
@@ -178,17 +178,17 @@ public class TBFileManager {
         return list
     }
     
-    public func getExtendedAttributes(file: String) throws -> [String:Data] {
-        let list = try getExtendedAttributeList(file: file)
+    public func extendedAttributes(file: String) throws -> [String:Data] {
+        let list = try extendedAttributeList(file: file)
         var attributes = [String:Data]()
         for att in list {
-            let value = try getExtendedAttribute(att, file: file)
+            let value = try extendedAttribute(att, file: file)
             attributes[att] = value
         }
         return attributes
     }
     
-    public func getExtendedAttribute(_ name: String, file: String) throws -> Data {
+    public func extendedAttribute(_ name: String, file: String) throws -> Data {
         let url = try fullUrl(file)
         let data = try url.withUnsafeFileSystemRepresentation({ (path) -> Data in
             let size = getxattr(path, name, nil, 0, 0, 0)
@@ -202,6 +202,7 @@ public class TBFileManager {
         })
         return data
     }
+    
     
     public func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
         guard writeEnabled else { throw Error.writeNotEnabled }
