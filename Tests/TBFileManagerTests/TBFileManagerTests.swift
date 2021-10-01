@@ -2,14 +2,95 @@ import XCTest
 @testable import TBFileManager
 
 final class TBFileManagerTests: XCTestCase {
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct
-        // results.
-        XCTAssertEqual(TBFileManager().text, "Hello, World!")
+    
+    let testData = "Data-AAABBBCCCDDD".data(using: .utf8)!
+    
+    let testString = "String-AAABBBCCCDDD"
+    
+    struct Object: Codable, Equatable {
+        var hello = "World"
+        var isGood = true
+        var answer = 42
+        var array = ["A","B","C"]
+        struct SubObject: Codable, Equatable {
+            var aaa = "AAA"
+            var bbb = 123
+            var array = [2,3,5,7,11,13]
+        }
+        var sub = SubObject()
     }
-
-    static var allTests = [
-        ("testExample", testExample),
-    ]
+    
+    let testObject = Object()
+    
+    let fileManager = TBFileManager(.documentDirectory, directory: "Test", doNotBackUp: true)
+    
+    
+    func testDataWriteRead() {
+        let file = "testDataWriteRead"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, data: testData)
+            let data = try fileManager.read(file: file)
+            XCTAssertEqual(testData, data)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testStringWriteRead() {
+        let file = "testStringWriteRead"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, string: testString)
+            let string:String = try fileManager.read(file: file)
+            XCTAssertEqual(testString, string)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testObjectWriteRead() {
+        let file = "testObjectWriteRead"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, object: testObject)
+            let object:Object = try fileManager.read(file: file)
+            XCTAssertEqual(testObject, object)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testExtendedAttribute() {
+        let file = "testExtendedAttribute"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, data: testData)
+            let testExtendedAttribute = "abcdefghijklmnopqrstuvwxyz12345678901234567890".data(using: .utf8)!
+            let extendedAttributeName = "abcdefg"
+            try? fileManager.removeExtendedAttribute(extendedAttributeName, file: file)
+            try fileManager.setExtendedAttribute(extendedAttributeName, value: testExtendedAttribute, file: file)
+            let extendedAttribute = try fileManager.extendedAttribute(extendedAttributeName, file: file)
+            XCTAssertEqual(extendedAttribute, testExtendedAttribute)
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testLastAccess() {
+        let file = "testLastAccess"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, object: testObject)
+            guard let lastAccess1 = fileManager.lastAccessDate(file: file) else { return XCTFail() }
+            let exp = expectation(description: "")
+            let _ = XCTWaiter.wait(for: [exp], timeout: 2.0)
+            let _:Object = try fileManager.read(file: file)
+            guard let lastAccess2 = fileManager.lastAccessDate(file: file) else { return XCTFail() }
+            XCTAssert(lastAccess2 > lastAccess1)
+        } catch {
+            XCTFail()
+        }
+    }
+    
 }
