@@ -14,6 +14,7 @@ public class TBFileManager {
         case invalidExtendedAttribute
         case encryptionProviderNotSet
         case writeNotEnabled
+        case writeExtendedAttributeError
     }
         
     public let baseURL: URL?
@@ -207,11 +208,16 @@ public class TBFileManager {
     public func setExtendedAttribute(_ name: String, value: Data, file: String) throws {
         guard writeEnabled else { throw Error.writeNotEnabled }
         let url = try fullUrl(file)
-        var value = value
+        var result: Int32 = 0
         let _ = url.withUnsafeFileSystemRepresentation { path in
-            setxattr(path, name, &value, value.count, 0, 0)
-         }
+            result = setxattr(path, name, (value as NSData).bytes, value.count, 0, 0)
+        }
+        guard result == 0 else {
+            throw Error.writeExtendedAttributeError
+        }
     }
+
+    
     
     public func removeExtendedAttribute(_ name: String, file: String) throws {
         let url = try fullUrl(file)
