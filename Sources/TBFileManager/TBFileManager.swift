@@ -1,7 +1,7 @@
 
 import Foundation
 
-public protocol TBFileManagerEncryptionProvider {
+public protocol TBFileManagerEncryptionProviderProtocol {
     func encrypt(data: Data, key: Data?) throws -> (key: Data, encryptedData: Data)
     func decrypt(data: Data, key: Data) throws -> Data
 }
@@ -31,7 +31,7 @@ public class TBFileManager {
     private let decoder = JSONDecoder()
     private let dateformatter = ISO8601DateFormatter()
     
-    public var encryptionProvider: TBFileManagerEncryptionProvider?
+    public var encryptionProvider: TBFileManagerEncryptionProviderProtocol?
     
     public init(baseURL: URL, doNotBackUp: Bool = false) {
         self.baseURL = baseURL
