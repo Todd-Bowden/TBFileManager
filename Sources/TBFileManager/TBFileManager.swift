@@ -98,6 +98,7 @@ public class TBFileManager {
         if doNotBackUp {
             try excludeFromBackup(file: file)
         }
+        try? setLastAccessDate(file: file)
     }
     
     public func write(file: String, string: String, encrypt: Bool = false, key: Data? = nil) throws {
@@ -129,9 +130,13 @@ public class TBFileManager {
         if let key = try? extendedAttribute(.encryptionKey, file: file) {
             guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
             let encryptedData = try Data(contentsOf: url)
-            return try encryptionProvider.decrypt(data: encryptedData, key: key)
+            let data = try encryptionProvider.decrypt(data: encryptedData, key: key)
+            try? setLastAccessDate(file: file)
+            return data
         } else {
-            return try Data(contentsOf: url)
+            let data = try Data(contentsOf: url)
+            try? setLastAccessDate(file: file)
+            return data
         }
     }
     
@@ -139,6 +144,7 @@ public class TBFileManager {
         let url = try fullUrl(file)
         let data = try Data(contentsOf: url)
         if let string = String(data: data, encoding: encoding) {
+            try? setLastAccessDate(file: file)
             return string
         } else {
             throw Error.stringEncodingError
@@ -147,7 +153,9 @@ public class TBFileManager {
     
     public func read<T:Codable>(file: String) throws -> T {
         let data = try read(file: file)
-        return try decoder.decode(T.self, from: data)
+        let object = try decoder.decode(T.self, from: data)
+        try? setLastAccessDate(file: file)
+        return object
     }
     
     
@@ -249,7 +257,7 @@ public class TBFileManager {
     public func setLastAccessDate(_ date: Date? = nil, file: String) throws {
         let date = date ?? Date()
         let string = String(dateformatter.string(from: date))
-        guard let data = string.data(using: .utf8) else { throw Error.stringEncodingError}
+        guard let data = string.data(using: .utf8) else { throw Error.stringEncodingError }
         try setExtendedAttribute(.lastAccessDate, value: data, file: file)
     }
     
