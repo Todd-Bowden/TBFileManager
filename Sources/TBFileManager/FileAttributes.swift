@@ -8,24 +8,24 @@
 import Foundation
 
 public struct FileAttributes {
-    let hfsTypeCode: UInt32
-    let ownerAccountID: UInt32
-    let size: UInt64
-    let systemFileNumber: UInt32
-    let posixPermissions: UInt32
-    let groupOwnerAccountName: String
-    let groupOwnerAccountID: UInt32
-    let protectionKey: String
-    let modificationDate: Date
-    let systemNumber: UInt32
-    let type: String
-    let ownerAccountName: String
-    let hfsCreatorCode: UInt32
-    let referenceCount: UInt32
-    let extensionHidden: Bool
-    let creationDate: Date
+    public let hfsTypeCode: UInt32
+    public let ownerAccountID: UInt32
+    public let size: UInt64
+    public let systemFileNumber: UInt32
+    public let posixPermissions: UInt32
+    public let groupOwnerAccountName: String
+    public let groupOwnerAccountID: UInt32
+    public let protectionKey: String
+    public let modificationDate: Date
+    public let systemNumber: UInt32
+    public let type: String
+    public let ownerAccountName: String
+    public let hfsCreatorCode: UInt32
+    public let referenceCount: UInt32
+    public let extensionHidden: Bool
+    public let creationDate: Date
     
-    init(dictionary: [FileAttributeKey:Any]) {
+    public init(dictionary: [FileAttributeKey:Any]) {
         hfsTypeCode = dictionary[FileAttributeKey.hfsTypeCode] as? UInt32 ?? 0
         ownerAccountID = dictionary[FileAttributeKey.ownerAccountID] as? UInt32 ?? 0
         size = dictionary[FileAttributeKey.size] as? UInt64 ?? 0
