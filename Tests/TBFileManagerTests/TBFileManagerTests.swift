@@ -93,4 +93,30 @@ final class TBFileManagerTests: XCTestCase {
         }
     }
     
+    func testAttributesDictionary() {
+        let file = "testAttributesDictionary"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, data: testData)
+            let attributes = try fileManager.attributesDictionary(file: file)
+            for a in attributes {
+                print(a)
+            }
+        } catch {
+            XCTFail()
+        }
+    }
+    
+    func testAttributes() {
+        let file = "testAttributes"
+        do {
+            try? fileManager.delete(file: file)
+            try fileManager.write(file: file, data: testData)
+            let attributes = try fileManager.attributes(file: file)
+            print(attributes)
+        } catch {
+            XCTFail()
+        }
+    }
+    
 }

@@ -167,10 +167,15 @@ public class TBFileManager {
     }
     
     // MARK: Attributes
+    // https://developer.apple.com/documentation/foundation/nsfileattributekey
     
-    public func attributes(file: String) throws -> [FileAttributeKey:Any] {
+    public func attributesDictionary(file: String) throws -> [FileAttributeKey:Any] {
         let url = try fullUrl(file)
         return try FileManager.default.attributesOfItem(atPath: url.path)
+    }
+    
+    public func attributes(file: String) throws -> FileAttributes {
+        try FileAttributes(dictionary: attributesDictionary(file: file))
     }
     
     public func extendedAttributeList(file: String) throws -> [String] {
@@ -267,6 +272,4 @@ public class TBFileManager {
         return dateformatter.date(from: string)
     }
     
-    
-
 }
