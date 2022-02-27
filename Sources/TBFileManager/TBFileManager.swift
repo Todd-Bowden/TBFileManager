@@ -91,7 +91,7 @@ public class TBFileManager {
             guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
             let kd = try encryptionProvider.encrypt(data: data, key: key)
             try kd.encryptedData.write(to: url)
-            try setExtendedAttribute(.encryptionKey, value: kd.key, file: file)
+            try setEncryptionKey(kd.key, file: file)
         } else {
             try data.write(to: url)
         }
@@ -127,7 +127,7 @@ public class TBFileManager {
     
     public func read(file: String) throws -> Data {
         let url = try fullUrl(file)
-        if let key = try? extendedAttribute(.encryptionKey, file: file) {
+        if let key = encryptionKey(file: file) {
             guard let encryptionProvider = encryptionProvider else { throw Error.encryptionProviderNotSet }
             let encryptedData = try Data(contentsOf: url)
             let data = try encryptionProvider.decrypt(data: encryptedData, key: key)
@@ -270,6 +270,18 @@ public class TBFileManager {
         guard let data = try? extendedAttribute(.lastAccessDate, file: file) else { return nil }
         guard let string = String(data: data, encoding: .utf8) else { return nil }
         return dateformatter.date(from: string)
+    }
+    
+    public func setEncryptionKey(_ key: Data, file: String) throws {
+        try setExtendedAttribute(.encryptionKey, value: key, file: file)
+    }
+    
+    public func encryptionKey(file: String) -> Data? {
+        try? extendedAttribute(.encryptionKey, file: file)
+    }
+    
+    public func isEncrypted(file: String) -> Bool {
+        encryptionKey(file: file) != nil
     }
     
 }
