@@ -61,6 +61,31 @@ final class TBFileManagerTests: XCTestCase {
         }
     }
     
+    func randomBytes(_ count: Int) -> Data? {
+          var bytes = [UInt8](repeating: 0, count: count)
+          let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
+          guard status == errSecSuccess else { return nil }
+          return Data(bytes)
+    }
+    
+    func testDataAppend() {
+        let file = "testDataAppend"
+        var testData = Data()
+        do {
+            try? fileManager.delete(file: file)
+            for i in 0...100 {
+                print(i)
+                guard let d = randomBytes(10000) else { return XCTFail() }
+                testData.append(d)
+                try fileManager.append(file: file, data: d)
+            }
+            let data = try fileManager.read(file: file)
+            XCTAssertEqual(testData, data)
+        } catch {
+            XCTFail()
+        }
+    }
+    
     func testExtendedAttribute() {
         let file = "testExtendedAttribute"
         do {

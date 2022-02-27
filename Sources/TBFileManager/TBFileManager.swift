@@ -15,6 +15,7 @@ public class TBFileManager {
         case encryptionProviderNotSet
         case writeNotEnabled
         case writeExtendedAttributeError
+        case cannotAppendToEncryptedFile
     }
     
     public enum ExtendedAttribute: String {
@@ -123,6 +124,33 @@ public class TBFileManager {
     }
     
     
+    // MARK: Append
+    
+    public func append(file: String, data: Data) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
+        guard !isEncrypted(file: file) else {
+            throw Error.cannotAppendToEncryptedFile
+        }
+        let url = try fullUrl(file)
+        if let handle = FileHandle(forWritingAtPath: url.path) {
+            defer { handle.closeFile() }
+            handle.seekToEndOfFile()
+            handle.write(data)
+            try? setLastAccessDate(file: file)
+        } else {
+            try write(file: file, data: data)
+        }
+    }
+    
+    public func append(file: String, string: String) throws {
+        guard writeEnabled else { throw Error.writeNotEnabled }
+        guard let data = string.data(using: .utf8) else {
+            throw Error.stringEncodingError
+        }
+        try append(file: file, data: data)
+    }
+    
+    
     // MARK: Read
     
     public func read(file: String) throws -> Data {
@@ -165,6 +193,7 @@ public class TBFileManager {
         let url = try fullUrl(file)
         try FileManager.default.removeItem(at: url)
     }
+    
     
     // MARK: Attributes
     // https://developer.apple.com/documentation/foundation/nsfileattributekey
