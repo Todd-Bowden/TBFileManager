@@ -198,9 +198,13 @@ public class TBFileManager {
     // MARK: Tags
     
     public func tags(file: String, directory: String? = nil) throws -> [String] {
-        let url = try fullUrl(file, directory: directory)
-        let resource = try url.resourceValues(forKeys: [.tagNamesKey])
-        return resource.tagNames ?? []
+        #if os(macOS)
+            let url = try fullUrl(file, directory: directory)
+            let resource = try url.resourceValues(forKeys: [.tagNamesKey])
+            return resource.tagNames ?? []
+        #else
+            return []
+        #endif
     }
     
 
