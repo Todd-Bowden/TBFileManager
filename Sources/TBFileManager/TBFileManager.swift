@@ -51,12 +51,12 @@ public class TBFileManager {
         self.doNotBackUp = doNotBackUp
     }
     
-    public func fullUrl(_ file: String) throws -> URL {
-        if let url = self.baseURL?.appendingPathComponent(file)  {
-            return url
-        } else {
-            throw Error.invalidURL
+    public func fullUrl(_ file: String, directory: String? = nil) throws -> URL {
+        guard var url = baseURL else { throw Error.invalidURL }
+        if let directory = directory {
+            url = url.appendingPathComponent(directory)
         }
+        return url .appendingPathComponent(file)
     }
     
     // MARK: Directories
