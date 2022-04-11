@@ -195,6 +195,15 @@ public class TBFileManager {
     }
     
     
+    // MARK: Tags
+    
+    public func tags(file: String, directory: String? = nil) throws -> [String] {
+        let url = try fullUrl(file, directory: directory)
+        let resource = try url.resourceValues(forKeys: [.tagNamesKey])
+        return resource.tagNames ?? []
+    }
+    
+
     // MARK: Attributes
     // https://developer.apple.com/documentation/foundation/nsfileattributekey
     
