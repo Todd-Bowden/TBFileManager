@@ -80,6 +80,18 @@ public class TBFileManager {
         }
     }
     
+    public func isDirectory(file: String, directory: String) -> Bool {
+        guard let url = try? fullUrl(directory + "/" + file) else { return false }
+        guard let rv = try? url.resourceValues(forKeys: [.isDirectoryKey]) else { return false }
+        return rv.isDirectory ?? false
+    }
+    
+    public func subdirectories(directory: String = "") throws -> [String] {
+        try contents(directory: directory).filter { file in
+            isDirectory(file: file, directory: directory)
+        }
+    }
+    
     
     // MARK: Write
 
