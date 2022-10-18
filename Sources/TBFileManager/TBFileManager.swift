@@ -81,7 +81,7 @@ public class TBFileManager {
     }
     
     public func isDirectory(file: String, directory: String) -> Bool {
-        guard let url = try? fullUrl(directory + "/" + file) else { return false }
+        guard let url = try? fullUrl(file, directory: directory) else { return false }
         guard let rv = try? url.resourceValues(forKeys: [.isDirectoryKey]) else { return false }
         return rv.isDirectory ?? false
     }
