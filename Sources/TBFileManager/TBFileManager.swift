@@ -1,11 +1,6 @@
 
 import Foundation
 
-public protocol TBFileManagerEncryptionProviderProtocol {
-    func encrypt(data: Data, key: Data?) throws -> (key: Data, encryptedData: Data)
-    func decrypt(data: Data, key: Data) throws -> Data
-}
-
 public class TBFileManager {
     
     public enum Error: Swift.Error {
