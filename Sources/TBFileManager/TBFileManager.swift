@@ -183,6 +183,13 @@ public class TBFileManager {
         return object
     }
     
+    public func read(type: Codable.Type, file: String) throws -> Codable {
+        let data = try read(file: file)
+        let object = try decoder.decode(type.self, from: data)
+        try? setLastAccessDate(file: file)
+        return object
+    }
+    
     
     // MARK: Delete
     
