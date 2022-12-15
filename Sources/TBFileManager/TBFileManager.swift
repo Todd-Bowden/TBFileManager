@@ -165,6 +165,11 @@ public class TBFileManager {
         }
     }
     
+    public func readData(file: String) throws -> Data {
+        let data: Data = try read(file: file)
+        return data
+    }
+    
     public func read(file: String, encoding: String.Encoding = .utf8) throws -> String {
         let url = try fullUrl(file)
         let data = try Data(contentsOf: url)
@@ -176,10 +181,20 @@ public class TBFileManager {
         }
     }
     
+    public func readString(file: String, encoding: String.Encoding = .utf8) throws -> String {
+        let string: String = try read(file: file, encoding: encoding)
+        return string
+    }
+    
     public func read<T:Codable>(file: String) throws -> T {
         let data = try read(file: file)
         let object = try decoder.decode(T.self, from: data)
         try? setLastAccessDate(file: file)
+        return object
+    }
+    
+    public func readObject<T:Codable>(file: String) throws -> T {
+        let object: T = try read(file: file)
         return object
     }
     
