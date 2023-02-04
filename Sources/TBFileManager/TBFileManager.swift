@@ -205,6 +205,11 @@ public class TBFileManager {
         return object
     }
     
+    public func fileExists(_ file: String) -> Bool {
+        guard let url = try? fullUrl(file) else { return false }
+        return FileManager.default.fileExists(atPath: url.path)
+    }
+    
     
     // MARK: Delete
     
