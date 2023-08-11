@@ -15,4 +15,5 @@ public enum TBFileManagerError: Swift.Error {
     case writeNotEnabled
     case writeExtendedAttributeError
     case cannotAppendToEncryptedFile
+    case utf8EncodingError
 }

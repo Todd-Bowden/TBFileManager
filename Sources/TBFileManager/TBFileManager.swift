@@ -320,6 +320,12 @@ public class TBFileManager {
         }
     }
 
+    public func setExtendedAttribute(_ name: String, string: String, file: String) throws {
+        guard let data = string.data(using: .utf8) else {
+            throw TBFileManagerError.utf8EncodingError
+        }
+        try setExtendedAttribute(name, value: data, file: file)
+    }
     
     public func removeExtendedAttribute(_ name: ExtendedAttribute, file: String) throws {
           try removeExtendedAttribute(name.rawValue, file: file)
