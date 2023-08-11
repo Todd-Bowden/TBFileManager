@@ -65,6 +65,16 @@ public class TBFileManager {
         }
     }
     
+    public func enumerate(directory: String = "") throws -> [String] {
+        let url = try fullUrl(directory)
+        guard let enumerator = FileManager.default.enumerator(atPath: url.path) else { return [] }
+        var files = [String]()
+        while let file = enumerator.nextObject() as? String {
+            files.append(file)
+        }
+        return files
+    }
+    
     public func isDirectory(file: String, directory: String) -> Bool {
         guard let url = try? fullUrl(file, directory: directory) else { return false }
         guard let rv = try? url.resourceValues(forKeys: [.isDirectoryKey]) else { return false }
