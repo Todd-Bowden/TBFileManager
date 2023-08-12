@@ -303,6 +303,18 @@ public class TBFileManager {
         return data
     }
     
+    public func extendedAttributeString(_ name: String, file: String) throws -> String {
+        let data = try extendedAttribute(name, file: file)
+        guard let string = String(data: data, encoding: .utf8) else {
+            throw TBFileManagerError.utf8EncodingError
+        }
+        return string
+    }
+    
+    public func extendedAttributeObject<T:Codable>(_ name: String, file: String) throws -> T {
+        let data = try extendedAttribute(name, file: file)
+        return try decoder.decode(T.self, from: data)
+    }
     
     public func setExtendedAttribute(_ name: ExtendedAttribute, value: Data, file: String) throws {
         try setExtendedAttribute(name.rawValue, value: value, file: file)
@@ -324,6 +336,11 @@ public class TBFileManager {
         guard let data = string.data(using: .utf8) else {
             throw TBFileManagerError.utf8EncodingError
         }
+        try setExtendedAttribute(name, value: data, file: file)
+    }
+    
+    public func setExtendedAttribute(_ name: String, object: Codable, file: String) throws {
+        let data = try encoder.encode(object)
         try setExtendedAttribute(name, value: data, file: file)
     }
     
