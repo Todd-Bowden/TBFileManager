@@ -245,6 +245,11 @@ public class TBFileManager {
     // MARK: Attributes
     // https://developer.apple.com/documentation/foundation/nsfileattributekey
     
+    static public func attributes(path: String) throws -> FileAttributes {
+        let dict = try FileManager.default.attributesOfItem(atPath: path)
+        return FileAttributes(dictionary: dict)
+    }
+    
     public func attributesDictionary(file: String) throws -> [FileAttributeKey:Any] {
         let url = try fullUrl(file)
         return try FileManager.default.attributesOfItem(atPath: url.path)
