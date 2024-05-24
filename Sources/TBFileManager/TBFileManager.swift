@@ -87,6 +87,16 @@ public class TBFileManager {
         }
     }
     
+    static public func isDirectory(url: URL) -> Bool {
+        guard let rv = try? url.resourceValues(forKeys: [.isDirectoryKey]) else { return false }
+        return rv.isDirectory ?? false
+    }
+    
+    static public func isHidden(url: URL) -> Bool {
+        guard let rv = try? url.resourceValues(forKeys: [.isHiddenKey]) else { return false }
+        return rv.isHidden ?? false
+    }
+    
     
     // MARK: Write
 
