@@ -1,4 +1,3 @@
-
 import Foundation
 
 public class TBFileManager {
@@ -258,6 +257,19 @@ public class TBFileManager {
         #else
             return []
         #endif
+    }
+
+    @available(macOS 26.0, *)
+    public func setTags(_ tags: [String], file: String, directory: String? = nil) throws {
+        var url = try fullUrl(file, directory: directory)
+        var resource = URLResourceValues()
+        resource.tagNames = tags
+        try url.setResourceValues(resource)
+    }
+
+    @available(macOS 26.0, *)
+    public func setTag(_ tag: String, file: String, directory: String? = nil) throws {
+        try setTags([tag], file: file, directory: directory)
     }
     
 
