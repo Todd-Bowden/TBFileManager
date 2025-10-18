@@ -259,6 +259,7 @@ public class TBFileManager {
         #endif
     }
 
+    #if os(macOS)
     @available(macOS 26.0, *)
     public func setTags(_ tags: [String], file: String, directory: String? = nil) throws {
         var url = try fullUrl(file, directory: directory)
@@ -271,7 +272,7 @@ public class TBFileManager {
     public func setTag(_ tag: String, file: String, directory: String? = nil) throws {
         try setTags([tag], file: file, directory: directory)
     }
-    
+    #endif
 
     // MARK: Attributes
     // https://developer.apple.com/documentation/foundation/nsfileattributekey
