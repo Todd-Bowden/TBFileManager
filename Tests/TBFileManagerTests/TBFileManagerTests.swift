@@ -22,7 +22,26 @@ final class TBFileManagerTests: XCTestCase {
     
     let testObject = Object()
     
-    let fileManager = TBFileManager(.documentDirectory, directory: "Test", doNotBackUp: true)
+    private var fileManager: TBFileManager!
+    private var testDirectory: URL!
+
+    override func setUpWithError() throws {
+        try super.setUpWithError()
+        // Documents can be protected by macOS privacy controls when testing from Xcode.
+        // Each test gets an independent scratch directory.
+        testDirectory = FileManager.default.temporaryDirectory
+            .appendingPathComponent("TBFileManagerLegacy-\(UUID().uuidString)", isDirectory: true)
+        fileManager = TBFileManager(baseURL: testDirectory, doNotBackUp: true)
+    }
+
+    override func tearDownWithError() throws {
+        if let testDirectory {
+            try? FileManager.default.removeItem(at: testDirectory)
+        }
+        fileManager = nil
+        testDirectory = nil
+        try super.tearDownWithError()
+    }
     
     
     func testDataWriteRead() {
@@ -33,7 +52,7 @@ final class TBFileManagerTests: XCTestCase {
             let data = try fileManager.read(file: file)
             XCTAssertEqual(testData, data)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -45,7 +64,7 @@ final class TBFileManagerTests: XCTestCase {
             let string:String = try fileManager.read(file: file)
             XCTAssertEqual(testString, string)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -57,7 +76,7 @@ final class TBFileManagerTests: XCTestCase {
             let object:Object = try fileManager.read(file: file)
             XCTAssertEqual(testObject, object)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -70,7 +89,7 @@ final class TBFileManagerTests: XCTestCase {
             guard let object2 = object as? Object else { return XCTFail() }
             XCTAssertEqual(testObject, object2)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -95,7 +114,7 @@ final class TBFileManagerTests: XCTestCase {
             let data = try fileManager.read(file: file)
             XCTAssertEqual(testData, data)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -111,7 +130,7 @@ final class TBFileManagerTests: XCTestCase {
             let extendedAttribute = try fileManager.extendedAttribute(extendedAttributeName, file: file)
             XCTAssertEqual(extendedAttribute, testExtendedAttribute)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -127,7 +146,7 @@ final class TBFileManagerTests: XCTestCase {
             guard let lastAccess2 = fileManager.lastAccessDate(file: file) else { return XCTFail() }
             XCTAssert(lastAccess2 > lastAccess1)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -141,7 +160,7 @@ final class TBFileManagerTests: XCTestCase {
                 print(a)
             }
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
@@ -153,7 +172,7 @@ final class TBFileManagerTests: XCTestCase {
             let attributes = try fileManager.attributes(file: file)
             print(attributes)
         } catch {
-            XCTFail()
+            XCTFail("Unexpected file operation error: \(error)")
         }
     }
     
