@@ -108,7 +108,14 @@ public class TBFileManager {
     
     // MARK: Write
 
+    // Keep these existing signatures unchanged so source callers and method references
+    // continue to work. The overloads below require an explicit options: argument.
     public func write(file: String, data: Data, encrypt: Bool? = nil, key: Data? = nil) throws {
+        try write(file: file, data: data, encrypt: encrypt, key: key, options: [])
+    }
+
+    /// Write using Foundation writing options, such as .atomic for safe replacement.
+    public func write(file: String, data: Data, encrypt: Bool? = nil, key: Data? = nil, options: Data.WritingOptions) throws {
         guard writeEnabled else { throw TBFileManagerError.writeNotEnabled }
         let encrypt = encrypt ?? (encryptionProvider != nil)
         let url = try fullUrl(file)
@@ -116,10 +123,10 @@ public class TBFileManager {
         if encrypt {
             guard let encryptionProvider = encryptionProvider else { throw TBFileManagerError.encryptionProviderNotSet }
             let kd = try encryptionProvider.encrypt(data: data, key: key)
-            try kd.encryptedData.write(to: url)
+            try kd.encryptedData.write(to: url, options: options)
             try setEncryptionKey(kd.key, file: file)
         } else {
-            try data.write(to: url)
+            try data.write(to: url, options: options)
         }
         if doNotBackUp {
             try excludeFromBackup(file: file)
@@ -128,17 +135,27 @@ public class TBFileManager {
     }
     
     public func write(file: String, string: String, encrypt: Bool = false, key: Data? = nil) throws {
+        try write(file: file, string: string, encrypt: encrypt, key: key, options: [])
+    }
+
+    /// Encode and write a string using Foundation writing options.
+    public func write(file: String, string: String, encrypt: Bool = false, key: Data? = nil, options: Data.WritingOptions) throws {
         guard writeEnabled else { throw TBFileManagerError.writeNotEnabled }
         guard let data = string.data(using: .utf8) else {
             throw TBFileManagerError.stringEncodingError
         }
-        try write(file: file, data: data, encrypt: encrypt, key: key)
+        try write(file: file, data: data, encrypt: encrypt, key: key, options: options)
     }
     
     public func write<T:Codable>(file: String, object: T, encrypt: Bool = false, key: Data? = nil) throws {
+        try write(file: file, object: object, encrypt: encrypt, key: key, options: [])
+    }
+
+    /// Encode and write a Codable object using Foundation writing options.
+    public func write<T:Codable>(file: String, object: T, encrypt: Bool = false, key: Data? = nil, options: Data.WritingOptions) throws {
         guard writeEnabled else { throw TBFileManagerError.writeNotEnabled }
         let data = try encoder.encode(object)
-        try write(file: file, data: data, encrypt: encrypt, key: key)
+        try write(file: file, data: data, encrypt: encrypt, key: key, options: options)
     }
     
     public func excludeFromBackup(file: String) throws {
